@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: inventory_backend
+    ports:
+      - "5000:5000"
+    environment:
+      - NAMA_PRAKTIKAN=Your Real Name
+      - NIM_PRAKTIKAN=12345678
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: inventory_frontend
+    ports:
+      - "8081:80"
+    depends_on:
+      - backend
+    restart: unless-stopped

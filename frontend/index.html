@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Inventory</title>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #121212;
+            color: #00ff00;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            background-color: #1e1e1e;
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 20px;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0 0 15px #00ff00;
+        }
+        h1 {
+            text-align: center;
+            border-bottom: 1px solid #00ff00;
+            padding-bottom: 10px;
+        }
+        .identity {
+            font-size: 0.9em;
+            color: #aaaaaa;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        ul {
+            list-style-type: square;
+            padding-left: 20px;
+        }
+        li {
+            margin: 10px 0;
+            font-size: 1.2em;
+        }
+        .input-group {
+            display: flex;
+            margin-top: 20px;
+        }
+        input[type="text"] {
+            flex-grow: 1;
+            padding: 10px;
+            background-color: #000;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            font-family: inherit;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #00ff00;
+            color: #000;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #00cc00;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 id="catalog-title">Loading Inventory...</h1>
+    <div class="identity">
+        <p>Player: <span id="owner-name">Loading...</span> | ID: <span id="owner-nim">Loading...</span></p>
+    </div>
+    
+    <ul id="item-list">
+        </ul>
+
+    <div class="input-group">
+        <input type="text" id="new-item" placeholder="Enter new item name...">
+        <button onclick="addItem()">Add to Inventory</button>
+    </div>
+</div>
+
+<script>
+    const API_URL = "/api";
+
+    async function loadInfo() {
+        try {
+            const response = await fetch(`${API_URL}/info`);
+            const data = await response.json();
+            
+            document.getElementById('catalog-title').innerText = data.judul_katalog;
+            document.getElementById('owner-name').innerText = data.pemilik;
+            document.getElementById('owner-nim').innerText = data.nim;
+
+            const itemList = document.getElementById('item-list');
+            itemList.innerHTML = "";
+            data.items.forEach(item => {
+                const li = document.createElement('li');
+                li.innerText = item;
+                itemList.appendChild(li);
+            });
+        } catch (error) {
+            console.error("Error fetching info:", error);
+            document.getElementById('catalog-title').innerText = "Connection Error";
+        }
+    }
+
+    async function addItem() {
+        const itemInput = document.getElementById('new-item');
+        const newItem = itemInput.value.trim();
+
+        if (newItem) {
+            try {
+                const response = await fetch(`${API_URL}/add-item`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ item: newItem })
+                });
+                
+                if (response.ok) {
+                    itemInput.value = "";
+                    loadInfo();
+                }
+            } catch (error) {
+                console.error("Error adding item:", error);
+                alert("Failed to add item to inventory.");
+            }
+        }
+    }
+
+    window.onload = loadInfo;
+</script>
+</body>
+</html>
